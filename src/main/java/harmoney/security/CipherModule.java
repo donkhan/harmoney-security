@@ -19,6 +19,8 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.codec.binary.Base64;
+
 public class CipherModule {
 
 	private byte[] salt = "@!$#1#12".getBytes();
@@ -65,7 +67,9 @@ public class CipherModule {
 			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
 			byte[] utf8 = str.getBytes("UTF8");
 			byte[] enc = cipher.doFinal(utf8);
-			return DatatypeConverter.printBase64Binary(enc);
+			//return DatatypeConverter.printBase64Binary(enc);
+			byte[] encodedData = Base64.encodeBase64(enc);
+			return new String(encodedData);
 		} catch (javax.crypto.BadPaddingException e) {
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
@@ -81,7 +85,8 @@ public class CipherModule {
 	public String decrypt(String str) {
 		try {
 			Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
-			byte[] dec = DatatypeConverter.parseBase64Binary(str);
+			//byte[] dec = DatatypeConverter.parseBase64Binary(str);
+			byte[] dec = Base64.decodeBase64(str.getBytes());
 			byte[] utf8 = cipher.doFinal(dec);
 			return new String(utf8, "UTF8");
 		} catch (javax.crypto.BadPaddingException e) {
@@ -97,20 +102,19 @@ public class CipherModule {
 	public static void main(String[] args) {
 
 		try {
-			CipherModule encrypter = new CipherModule(); // key for encryption
-			String encrypted = encrypter.encrypt(args[0]);
-			PrintWriter out = new PrintWriter(new File("c:\\users\\kkhan\\pw.txt"));
-			System.out.println("user name : " + args[0]);
-			out.println("user name : " + args[0]);
-			System.out.println("encrypted username : " + encrypted);
-			out.println("encrypted username : " + encrypted);
+			CipherModule module = new CipherModule(); 
+			String encrypted = module.encrypt(args[0]);
 			
-			encrypted = encrypter.encrypt(args[1]);
+			System.out.println("user name : " + args[0]);
+			System.out.println("encrypted username : " + encrypted);
+			System.out.println("decryped back as for verification " + module.decrypt(encrypted));
+			
+			
+			encrypted = module.encrypt(args[1]);
 			System.out.println("password  : " + args[1]);
-			out.println("password  : " + args[1]);
 			System.out.println("encrypted password : " + encrypted);
-			out.println("encrypted password : " + encrypted);
-			out.close();
+			System.out.println("decryped back as for verification " + module.decrypt(encrypted));
+			
 
 		} catch (Exception e) {
 
