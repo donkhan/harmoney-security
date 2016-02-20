@@ -1,7 +1,5 @@
 package harmoney.security;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -17,7 +15,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -40,7 +37,7 @@ public class CipherModule {
 		return null;
 	}
 	
-	CipherModule() {
+	public CipherModule() {
 	}
 	
 	private Cipher getCipher(int mode){
@@ -103,17 +100,13 @@ public class CipherModule {
 
 		try {
 			CipherModule module = new CipherModule(); 
-			String encrypted = module.encrypt(args[0]);
+			String uencrypted = module.encrypt(args[0]);
 			
-			System.out.println("user name : " + args[0]);
-			System.out.println("encrypted username : " + encrypted);
-			System.out.println("decryped back as for verification " + module.decrypt(encrypted));
+			System.out.println("i/o : " + args[0]);
+			System.out.println("encrypted  : " + uencrypted);
+			System.out.println("decryped back as for verification " + module.decrypt(uencrypted));
 			
 			
-			encrypted = module.encrypt(args[1]);
-			System.out.println("password  : " + args[1]);
-			System.out.println("encrypted password : " + encrypted);
-			System.out.println("decryped back as for verification " + module.decrypt(encrypted));
 			
 
 		} catch (Exception e) {
