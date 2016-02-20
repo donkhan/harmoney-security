@@ -1,0 +1,68 @@
+package harmoney.security;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+
+public class EncryptedDataSourceFactory extends BasicDataSourceFactory {
+
+	public EncryptedDataSourceFactory() {
+	}
+
+	public Object getObjectInstance(Object obj, Name name, Context nameCtx,
+			Hashtable environment) throws Exception {
+		if (obj instanceof Reference) {
+			setUsername((Reference) obj);
+			setPassword((Reference) obj);
+		}
+		return super.getObjectInstance(obj, name, nameCtx, environment);
+	}
+
+	private void setUsername(Reference ref) throws Exception {
+		findDecryptAndReplace("username", ref);
+	}
+
+	private void setPassword(Reference ref) throws Exception {
+		findDecryptAndReplace("password", ref);
+	}
+
+	private void findDecryptAndReplace(String refType, Reference ref)
+			throws Exception {
+		int idx = find(refType, ref);
+		String decrypted = decrypt(idx, ref);
+		replace(idx, refType, decrypted, ref);
+	}
+
+	private void replace(int idx, String refType, String newValue, Reference ref)
+			throws Exception {
+		ref.remove(idx);
+		ref.add(idx, new StringRefAddr(refType, newValue));
+	}
+
+	private String decrypt(int idx, Reference ref) throws Exception {
+		CipherModule cm = new CipherModule();
+		String decryptedPassword = cm.decrypt(ref.get(idx).getContent().toString());
+		//String decryptedPassword = new WybisCipherModule(ENC_KEY).decrypt(ref.get(idx).getContent().toString());
+		return decryptedPassword;
+	}
+
+	private int find(String addrType, Reference ref) throws Exception {
+		Enumeration enu = ref.getAll();
+		for (int i = 0; enu.hasMoreElements(); i++) {
+			RefAddr addr = (RefAddr) enu.nextElement();
+			if (addr.getType().compareTo(addrType) == 0)
+				return i;
+		}
+
+		throw new Exception("The \"" + addrType
+				+ "\" name/value pair was not found"
+				+ " in the Reference object.  The reference Object is" + " "
+				+ ref.toString());
+	}
+}
